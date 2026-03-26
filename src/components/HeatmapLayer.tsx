@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useMap } from 'react-leaflet';
 import L from 'leaflet';
 import type { HeatmapDataPoint } from '../types/heatmap';
+import { isInsideCanada } from '../data/canadaBoundary';
 
 interface HeatmapLayerProps {
   points: HeatmapDataPoint[];
@@ -126,6 +127,9 @@ export default function HeatmapLayer({
               coords.y * size.y + y,
             );
             const ll = map.unproject(absPoint, coords.z);
+
+            if (!isInsideCanada(ll.lat, ll.lng)) continue;
+
             const val = idw(ll.lat, ll.lng, points, power);
             const c = colorFromValue(val, stops, opacity);
 
