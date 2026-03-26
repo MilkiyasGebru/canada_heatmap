@@ -33,14 +33,10 @@ export default function CanadaHeatmap() {
         />
         <HeatmapLayer
           points={canadaCities}
-          options={{
-            radius: 35,
-            blur: 25,
-            maxZoom: 10,
-            max: 1.0,
-            minOpacity: 0.05,
-            gradient: GRADIENT,
-          }}
+          gradient={GRADIENT}
+          opacity={0.6}
+          power={2.5}
+          resolution={4}
         />
       </MapContainer>
       <Legend gradient={GRADIENT} />
