@@ -272,6 +272,22 @@
   border-top: 1px solid rgba(194, 198, 212, 0.25);
 }
 
+/* PGA breakpoint ticks */
+.pga-ticks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pga-tick {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--on-surface-variant);
+  background: var(--bg);
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+
 /* Leaflet overrides */
 .leaflet-container {
   font-family: var(--font-body);

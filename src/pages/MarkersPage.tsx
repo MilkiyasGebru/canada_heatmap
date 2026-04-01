@@ -1,22 +1,9 @@
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import SidePanel from '../components/SidePanel';
 import { seismicLocations } from '../data/seismicPoints';
-import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 const CANADA_CENTER: [number, number] = [56.1304, -106.3468];
-
-// Fix Leaflet default marker icon path issue with bundlers
-const defaultIcon = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  iconRetinaUrl:
-    'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
 
 const DUMMY_GRADIENT: Record<number, string> = {
   0.0: '#ccc',
@@ -40,10 +27,17 @@ export default function MarkersPage() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           {seismicLocations.map((loc) => (
-            <Marker
+            <CircleMarker
               key={`${loc.lat}-${loc.long}`}
-              position={[loc.lat, loc.long]}
-              icon={defaultIcon}
+              center={[loc.lat, loc.long]}
+              radius={4}
+              pathOptions={{
+                fillColor: '#d32f2f',
+                color: '#b71c1c',
+                weight: 1,
+                fillOpacity: 0.9,
+                opacity: 0.9,
+              }}
             >
               <Popup>
                 <strong>{loc.location}</strong>, {loc.province}
@@ -52,7 +46,7 @@ export default function MarkersPage() {
                 <br />
                 PGA: {loc.pga.toFixed(4)} g
               </Popup>
-            </Marker>
+            </CircleMarker>
           ))}
         </MapContainer>
       </div>
@@ -65,7 +59,7 @@ export default function MarkersPage() {
         maxVal={0}
         unit=""
         scaleLabel=""
-        description="Locations from the NBC 2025 climatic and seismic dataset. Click any marker to see the city name, province, and key seismic values."
+        description="Locations from the NBC 2025 climatic and seismic dataset. Click any dot to see the city name, province, and key seismic values."
         locationCount={seismicLocations.length}
       />
     </div>
