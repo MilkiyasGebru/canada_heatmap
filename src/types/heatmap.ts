@@ -10,4 +10,12 @@ export interface SeismicLocation {
   lat: number;
   long: number;
   sa02: number;
+  pga: number;
+}
+
+export interface PressureLocation {
+  location: string;
+  lat: number;
+  long: number;
+  p500: number; // 1/500 value
 }

@@ -14,8 +14,14 @@ function parseCSV(text: string): SeismicLocation[] {
         lat: parseFloat(parts[2]),
         long: parseFloat(parts[3]),
         sa02: parseFloat(parts[4]),
+        pga: parseFloat(parts[10]),
       };
     });
 }
 
 export const seismicLocations: SeismicLocation[] = parseCSV(csvText);
+
+/** Lookup map: location name → { lat, long } */
+export const coordsByName = new Map(
+  seismicLocations.map((loc) => [loc.location, { lat: loc.lat, long: loc.long }]),
+);
