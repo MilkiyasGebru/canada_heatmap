@@ -2,8 +2,7 @@ import { useState, useMemo } from 'react';
 import BaseMap from '../components/BaseMap';
 import HeatmapLayer from '../components/HeatmapLayer';
 import SidePanel from '../components/SidePanel';
-import { seismicLocations } from '../data/seismicPoints';
-import calculateVsp from '../utils/calculateVsp';
+import precomputed from '../data/precomputed.json';
 import type { HeatmapDataPoint } from '../types/heatmap';
 
 const GRADIENT: Record<number, string> = {
@@ -15,29 +14,17 @@ const GRADIENT: Record<number, string> = {
   1.0: '#800026',
 };
 
-function computeData(ie: number, wp: number) {
-  const values = seismicLocations.map((loc) => ({
-    lat: loc.lat,
-    long: loc.long,
-    vsp: calculateVsp(loc.sa02, ie, wp),
-  }));
-  const maxVsp = Math.max(...values.map((v) => v.vsp));
-  const minVsp = Math.min(...values.map((v) => v.vsp));
-  const points: HeatmapDataPoint[] = values.map((v) => ({
-    lat: v.lat,
-    long: v.long,
-    intensity: maxVsp > 0 ? (v.vsp / maxVsp) * 100 : 0,
-  }));
-  return { points, maxVsp, minVsp };
-}
+const points = precomputed.vsp.points as HeatmapDataPoint[];
 
 export default function VspPage() {
   const [ie, setIe] = useState(1.0);
   const [wp, setWp] = useState(1.0);
-  const { points, maxVsp, minVsp } = useMemo(
-    () => computeData(ie, wp),
-    [ie, wp],
-  );
+
+  const { minVsp, maxVsp } = useMemo(() => {
+    const minVsp = 0.9 * precomputed.vsp.sa02Min * ie * wp;
+    const maxVsp = 0.9 * precomputed.vsp.sa02Max * ie * wp;
+    return { minVsp, maxVsp };
+  }, [ie, wp]);
 
   return (
     <div className="page-layout">
@@ -62,7 +49,7 @@ export default function VspPage() {
         unit="kN"
         scaleLabel="Vsp Scale"
         description="Lateral earthquake force (Vsp) calculated as 0.9 × Sa(0.2) × Ie × Wp per NBC 2025. Sa(0.2) is the spectral acceleration at 0.2s for Site Class XD."
-        locationCount={seismicLocations.length}
+        locationCount={precomputed.locationCount}
       >
         <div className="panel-card formula-card">
           <h3>Formula</h3>

@@ -1,7 +1,7 @@
-import { MapContainer, GeoJSON } from 'react-leaflet';
+import { MapContainer, TileLayer } from 'react-leaflet';
+import CanadaMask from './CanadaMask';
 import type { ReactNode } from 'react';
 import type { LatLngBoundsExpression } from 'leaflet';
-import canadaGeo from '../data/canadaGeo.json';
 import 'leaflet/dist/leaflet.css';
 
 const CANADA_CENTER: [number, number] = [56.1304, -106.3468];
@@ -26,17 +26,13 @@ export default function BaseMap({ children }: BaseMapProps) {
       style={{ width: '100%', height: '100%' }}
       scrollWheelZoom
     >
-      <GeoJSON
-        data={canadaGeo as GeoJSON.GeoJsonObject}
-        style={{
-          fillColor: '#e8edf3',
-          fillOpacity: 1,
-          color: '#8b95a5',
-          weight: 1,
-          opacity: 0.7,
-        }}
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        noWrap
       />
       {children}
+      <CanadaMask />
     </MapContainer>
   );
 }

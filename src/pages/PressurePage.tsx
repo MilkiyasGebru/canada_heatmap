@@ -1,8 +1,7 @@
-import { useMemo } from 'react';
 import BaseMap from '../components/BaseMap';
 import HeatmapLayer from '../components/HeatmapLayer';
 import SidePanel from '../components/SidePanel';
-import { pressureLocations } from '../data/pressurePoints';
+import precomputed from '../data/precomputed.json';
 import type { HeatmapDataPoint } from '../types/heatmap';
 
 const GRADIENT: Record<number, string> = {
@@ -14,20 +13,9 @@ const GRADIENT: Record<number, string> = {
   1.0: '#7a0177',
 };
 
-function computeData() {
-  const maxP = Math.max(...pressureLocations.map((l) => l.p500));
-  const minP = Math.min(...pressureLocations.map((l) => l.p500));
-  const points: HeatmapDataPoint[] = pressureLocations.map((loc) => ({
-    lat: loc.lat,
-    long: loc.long,
-    intensity: maxP > 0 ? (loc.p500 / maxP) * 100 : 0,
-  }));
-  return { points, maxP, minP };
-}
+const points = precomputed.pressure.points as HeatmapDataPoint[];
 
 export default function PressurePage() {
-  const { points, maxP, minP } = useMemo(computeData, []);
-
   return (
     <div className="page-layout">
       <div className="map-section">
@@ -46,12 +34,12 @@ export default function PressurePage() {
         title="Wind Pressure (1/500)"
         subtitle="Hourly wind pressure, 1-in-500-year return"
         gradient={GRADIENT}
-        minVal={minP}
-        maxVal={maxP}
+        minVal={precomputed.pressure.p500Min}
+        maxVal={precomputed.pressure.p500Max}
         unit="kPa"
         scaleLabel="Pressure Scale"
         description="Hourly wind pressure for a 1-in-500-year return period per NBC 2025 climatic data. Used for structural design of cladding and components exposed to wind loads."
-        locationCount={pressureLocations.length}
+        locationCount={precomputed.pressureLocationCount}
       >
         <div className="panel-card formula-card">
           <h3>Return Period</h3>

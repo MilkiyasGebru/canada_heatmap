@@ -1,14 +1,10 @@
-import { useMemo } from 'react';
 import BaseMap from '../components/BaseMap';
 import HeatmapLayer from '../components/HeatmapLayer';
 import SidePanel from '../components/SidePanel';
-import { seismicLocations } from '../data/seismicPoints';
+import precomputed from '../data/precomputed.json';
 import type { HeatmapDataPoint } from '../types/heatmap';
 
-// Non-linear PGA scale breakpoints (matching NBC standard legend)
-const PGA_BREAKS = [0, 0.01, 0.02, 0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1.0, 2.0, 4.0];
-
-// Gradient matching the provided image — 12 bands from white to dark maroon
+// Gradient matching the provided NBC PGA legend image
 const GRADIENT: Record<number, string> = {
   [0 / 11]: '#ffffff',
   [1 / 11]: '#d0d0ff',
@@ -24,36 +20,10 @@ const GRADIENT: Record<number, string> = {
   [11 / 11]: '#320000',
 };
 
-function pgaToNormalized(pga: number): number {
-  if (pga <= 0) return 0;
-  if (pga >= PGA_BREAKS[PGA_BREAKS.length - 1]) return 1;
-  for (let i = 0; i < PGA_BREAKS.length - 1; i++) {
-    if (pga <= PGA_BREAKS[i + 1]) {
-      const lo = PGA_BREAKS[i];
-      const hi = PGA_BREAKS[i + 1];
-      const t = (pga - lo) / (hi - lo);
-      return (i + t) / (PGA_BREAKS.length - 1);
-    }
-  }
-  return 1;
-}
-
-function computeData() {
-  const maxPga = Math.max(...seismicLocations.map((l) => l.pga));
-  const minPga = Math.min(...seismicLocations.map((l) => l.pga));
-  const points: HeatmapDataPoint[] = seismicLocations.map((loc) => ({
-    lat: loc.lat,
-    long: loc.long,
-    intensity: pgaToNormalized(loc.pga) * 100,
-  }));
-  return { points, maxPga, minPga };
-}
-
+const points = precomputed.pga.points as HeatmapDataPoint[];
 const LEGEND_TICKS = [0, 0.05, 0.1, 0.2, 0.4, 0.8, 2.0, 4.0];
 
 export default function PGAPage() {
-  const { points, maxPga, minPga } = useMemo(computeData, []);
-
   return (
     <div className="page-layout">
       <div className="map-section">
@@ -72,12 +42,12 @@ export default function PGAPage() {
         title="Peak Ground Acceleration"
         subtitle="PGA for Site Class XD"
         gradient={GRADIENT}
-        minVal={minPga}
-        maxVal={maxPga}
+        minVal={precomputed.pga.pgaMin}
+        maxVal={precomputed.pga.pgaMax}
         unit="g"
         scaleLabel="PGA Scale (non-linear)"
         description="Peak Ground Acceleration (PGA) represents the maximum horizontal acceleration at a site during an earthquake. Values shown are for Site Class XD per NBC 2025 seismic hazard data."
-        locationCount={seismicLocations.length}
+        locationCount={precomputed.locationCount}
       >
         <div className="panel-card formula-card">
           <h3>What is PGA?</h3>

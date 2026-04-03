@@ -1,7 +1,7 @@
 import { CircleMarker, Popup } from 'react-leaflet';
 import BaseMap from '../components/BaseMap';
 import SidePanel from '../components/SidePanel';
-import { seismicLocations } from '../data/seismicPoints';
+import precomputed from '../data/precomputed.json';
 
 const DUMMY_GRADIENT: Record<number, string> = {
   0.0: '#ccc',
@@ -13,7 +13,7 @@ export default function MarkersPage() {
     <div className="page-layout">
       <div className="map-section">
         <BaseMap>
-          {seismicLocations.map((loc) => (
+          {precomputed.cities.map((loc) => (
             <CircleMarker
               key={`${loc.lat}-${loc.long}`}
               center={[loc.lat, loc.long]}
@@ -47,7 +47,7 @@ export default function MarkersPage() {
         unit=""
         scaleLabel=""
         description="Locations from the NBC 2025 climatic and seismic dataset. Click any dot to see the city name, province, and key seismic values."
-        locationCount={seismicLocations.length}
+        locationCount={precomputed.locationCount}
       />
     </div>
   );

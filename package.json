@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "precompute": "bun scripts/precompute.ts",
+    "build": "bun scripts/precompute.ts && tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
