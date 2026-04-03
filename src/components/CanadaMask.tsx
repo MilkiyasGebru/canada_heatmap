@@ -31,11 +31,11 @@ export default function CanadaMask() {
     <GeoJSON
       data={maskData}
       style={{
-        fillColor: '#f7f9fb',
+        fillColor: '#c8ccd2',
         fillOpacity: 1,
         color: '#8b95a5',
         weight: 1.5,
-        opacity: 0.5,
+        opacity: 0.6,
       }}
     />
   );
