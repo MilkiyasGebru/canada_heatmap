@@ -33,9 +33,10 @@ export default function VspPage() {
           <HeatmapLayer
             points={points}
             gradient={GRADIENT}
-            opacity={0.6}
+            opacity={0.7}
             power={2.5}
-            resolution={4}
+            resolution={3}
+            stepped
           />
         </BaseMap>
       </div>

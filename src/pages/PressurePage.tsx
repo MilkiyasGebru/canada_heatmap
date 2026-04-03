@@ -4,13 +4,20 @@ import SidePanel from '../components/SidePanel';
 import precomputed from '../data/precomputed.json';
 import type { HeatmapDataPoint } from '../types/heatmap';
 
+// Same NBC-style gradient as PGA page
 const GRADIENT: Record<number, string> = {
-  0.0: '#feebe2',
-  0.2: '#fcc5c0',
-  0.4: '#fa9fb5',
-  0.6: '#f768a1',
-  0.8: '#c51b8a',
-  1.0: '#7a0177',
+  [0 / 11]: '#ffffff',
+  [1 / 11]: '#d0d0ff',
+  [2 / 11]: '#9898ff',
+  [3 / 11]: '#4040ff',
+  [4 / 11]: '#00c8c8',
+  [5 / 11]: '#00c800',
+  [6 / 11]: '#ffff00',
+  [7 / 11]: '#ffc800',
+  [8 / 11]: '#ff6400',
+  [9 / 11]: '#ff0000',
+  [10 / 11]: '#880000',
+  [11 / 11]: '#320000',
 };
 
 const points = precomputed.pressure.points as HeatmapDataPoint[];
@@ -23,9 +30,10 @@ export default function PressurePage() {
           <HeatmapLayer
             points={points}
             gradient={GRADIENT}
-            opacity={0.6}
+            opacity={0.7}
             power={2.5}
-            resolution={4}
+            resolution={3}
+            stepped
           />
         </BaseMap>
       </div>
