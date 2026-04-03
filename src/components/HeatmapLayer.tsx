@@ -8,10 +8,10 @@ interface HeatmapLayerProps {
   points: HeatmapDataPoint[];
   gradient?: Record<number, string>;
   opacity?: number;
-  /** IDW power parameter — higher = sharper falloff near points (default 2.5) */
   power?: number;
-  /** Pixel step for sampling — lower = sharper but slower (default 4) */
   resolution?: number;
+  /** Render as flat color bands with contour lines (like NBCC maps) */
+  stepped?: boolean;
 }
 
 const DEFAULT_GRADIENT: Record<number, string> = {
@@ -42,7 +42,8 @@ function buildStops(gradient: Record<number, string>): GradientStop[] {
     .sort((a, b) => a.stop - b.stop);
 }
 
-function colorFromValue(
+/** Smooth interpolated color */
+function colorSmooth(
   v: number,
   stops: GradientStop[],
   alpha: number,
@@ -50,7 +51,6 @@ function colorFromValue(
   const clamped = Math.max(0, Math.min(1, v));
   let lo = stops[0];
   let hi = stops[stops.length - 1];
-
   for (let i = 0; i < stops.length - 1; i++) {
     if (clamped >= stops[i].stop && clamped <= stops[i + 1].stop) {
       lo = stops[i];
@@ -58,16 +58,40 @@ function colorFromValue(
       break;
     }
   }
-
   const range = hi.stop - lo.stop;
   const t = range === 0 ? 0 : (clamped - lo.stop) / range;
-
   return [
     Math.round(lo.rgb[0] + t * (hi.rgb[0] - lo.rgb[0])),
     Math.round(lo.rgb[1] + t * (hi.rgb[1] - lo.rgb[1])),
     Math.round(lo.rgb[2] + t * (hi.rgb[2] - lo.rgb[2])),
     Math.round(alpha * 255),
   ];
+}
+
+/** Stepped/flat band color — snaps to the stop at or below the value */
+function colorStepped(
+  v: number,
+  stops: GradientStop[],
+  alpha: number,
+): [number, number, number, number] {
+  const clamped = Math.max(0, Math.min(1, v));
+  let c = stops[0];
+  for (let i = stops.length - 1; i >= 0; i--) {
+    if (clamped >= stops[i].stop) {
+      c = stops[i];
+      break;
+    }
+  }
+  return [c.rgb[0], c.rgb[1], c.rgb[2], Math.round(alpha * 255)];
+}
+
+/** Returns the band index (which stop the value falls into) */
+function getBand(v: number, stops: GradientStop[]): number {
+  const clamped = Math.max(0, Math.min(1, v));
+  for (let i = stops.length - 1; i >= 0; i--) {
+    if (clamped >= stops[i].stop) return i;
+  }
+  return 0;
 }
 
 function idw(
@@ -78,19 +102,15 @@ function idw(
 ): number {
   let num = 0;
   let den = 0;
-
   for (let i = 0; i < points.length; i++) {
     const dLat = lat - points[i].lat;
     const dLng = lng - points[i].long;
     const distSq = dLat * dLat + dLng * dLng;
-
     if (distSq < 0.0001) return points[i].intensity / 100;
-
     const w = 1 / Math.pow(distSq, power / 2);
     num += w * (points[i].intensity / 100);
     den += w;
   }
-
   return den === 0 ? 0 : num / den;
 }
 
@@ -100,12 +120,14 @@ export default function HeatmapLayer({
   opacity = 0.6,
   power = 2.5,
   resolution = 4,
+  stepped = false,
 }: HeatmapLayerProps) {
   const map = useMap();
   const layerRef = useRef<L.GridLayer | null>(null);
 
   useEffect(() => {
     const stops = buildStops(gradient);
+    const colorFn = stepped ? colorStepped : colorSmooth;
 
     const IDWGrid = L.GridLayer.extend({
       createTile(coords: L.Coords) {
@@ -120,22 +142,56 @@ export default function HeatmapLayer({
         const imgData = ctx.createImageData(size.x, size.y);
         const buf = imgData.data;
 
-        for (let y = 0; y < size.y; y += resolution) {
-          for (let x = 0; x < size.x; x += resolution) {
+        const cols = Math.ceil(size.x / resolution);
+        const rows = Math.ceil(size.y / resolution);
+
+        // Pass 1: compute IDW values on grid
+        const vals = new Float32Array(rows * cols).fill(-1);
+
+        for (let gy = 0; gy < rows; gy++) {
+          for (let gx = 0; gx < cols; gx++) {
+            const px = gx * resolution;
+            const py = gy * resolution;
             const absPoint = L.point(
-              coords.x * size.x + x,
-              coords.y * size.y + y,
+              coords.x * size.x + px,
+              coords.y * size.y + py,
             );
             const ll = map.unproject(absPoint, coords.z);
-
             if (!isInsideCanada(ll.lat, ll.lng)) continue;
+            vals[gy * cols + gx] = idw(ll.lat, ll.lng, points, power);
+          }
+        }
 
-            const val = idw(ll.lat, ll.lng, points, power);
-            const c = colorFromValue(val, stops, opacity);
+        // Pass 2: render colors + contour edges
+        for (let gy = 0; gy < rows; gy++) {
+          for (let gx = 0; gx < cols; gx++) {
+            const val = vals[gy * cols + gx];
+            if (val < 0) continue; // outside Canada
 
-            for (let dy = 0; dy < resolution && y + dy < size.y; dy++) {
-              for (let dx = 0; dx < resolution && x + dx < size.x; dx++) {
-                const idx = ((y + dy) * size.x + (x + dx)) * 4;
+            let c = colorFn(val, stops, opacity);
+
+            // Contour edge detection for stepped mode
+            if (stepped) {
+              const band = getBand(val, stops);
+              const rVal = gx + 1 < cols ? vals[gy * cols + gx + 1] : -1;
+              const bVal = gy + 1 < rows ? vals[(gy + 1) * cols + gx] : -1;
+              const isEdge =
+                (rVal >= 0 && getBand(rVal, stops) !== band) ||
+                (bVal >= 0 && getBand(bVal, stops) !== band);
+              if (isEdge) {
+                c = [50, 50, 50, Math.round(opacity * 180)];
+              }
+            }
+
+            const startY = gy * resolution;
+            const startX = gx * resolution;
+            for (let dy = 0; dy < resolution && startY + dy < size.y; dy++) {
+              for (
+                let dx = 0;
+                dx < resolution && startX + dx < size.x;
+                dx++
+              ) {
+                const idx = ((startY + dy) * size.x + (startX + dx)) * 4;
                 buf[idx] = c[0];
                 buf[idx + 1] = c[1];
                 buf[idx + 2] = c[2];
@@ -159,7 +215,7 @@ export default function HeatmapLayer({
         layerRef.current = null;
       }
     };
-  }, [map, points, gradient, opacity, power, resolution]);
+  }, [map, points, gradient, opacity, power, resolution, stepped]);
 
   return null;
 }

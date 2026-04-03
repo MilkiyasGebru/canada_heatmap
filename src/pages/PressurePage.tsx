@@ -1,70 +1,53 @@
-import { useMemo } from 'react';
-import { MapContainer, TileLayer } from 'react-leaflet';
+import BaseMap from '../components/BaseMap';
 import HeatmapLayer from '../components/HeatmapLayer';
 import SidePanel from '../components/SidePanel';
-import { pressureLocations } from '../data/pressurePoints';
+import precomputed from '../data/precomputed.json';
 import type { HeatmapDataPoint } from '../types/heatmap';
-import 'leaflet/dist/leaflet.css';
 
-const CANADA_CENTER: [number, number] = [56.1304, -106.3468];
+// Same NBC-style gradient as PGA page
 const GRADIENT: Record<number, string> = {
-  0.0: '#feebe2',
-  0.2: '#fcc5c0',
-  0.4: '#fa9fb5',
-  0.6: '#f768a1',
-  0.8: '#c51b8a',
-  1.0: '#7a0177',
+  [0 / 11]: '#ffffff',
+  [1 / 11]: '#d0d0ff',
+  [2 / 11]: '#9898ff',
+  [3 / 11]: '#4040ff',
+  [4 / 11]: '#00c8c8',
+  [5 / 11]: '#00c800',
+  [6 / 11]: '#ffff00',
+  [7 / 11]: '#ffc800',
+  [8 / 11]: '#ff6400',
+  [9 / 11]: '#ff0000',
+  [10 / 11]: '#880000',
+  [11 / 11]: '#320000',
 };
 
-function computeData() {
-  const maxP = Math.max(...pressureLocations.map((l) => l.p500));
-  const minP = Math.min(...pressureLocations.map((l) => l.p500));
-  const points: HeatmapDataPoint[] = pressureLocations.map((loc) => ({
-    lat: loc.lat,
-    long: loc.long,
-    intensity: maxP > 0 ? (loc.p500 / maxP) * 100 : 0,
-  }));
-  return { points, maxP, minP };
-}
+const points = precomputed.pressure.points as HeatmapDataPoint[];
 
 export default function PressurePage() {
-  const { points, maxP, minP } = useMemo(computeData, []);
-
   return (
     <div className="page-layout">
       <div className="map-section">
-        <MapContainer
-          center={CANADA_CENTER}
-          zoom={4}
-          minZoom={3}
-          maxZoom={13}
-          style={{ width: '100%', height: '100%' }}
-          scrollWheelZoom
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+        <BaseMap>
           <HeatmapLayer
             points={points}
             gradient={GRADIENT}
-            opacity={0.6}
+            opacity={0.7}
             power={2.5}
-            resolution={4}
+            resolution={3}
+            stepped
           />
-        </MapContainer>
+        </BaseMap>
       </div>
       <SidePanel
         badge="NBC 2025"
         title="Wind Pressure (1/500)"
         subtitle="Hourly wind pressure, 1-in-500-year return"
         gradient={GRADIENT}
-        minVal={minP}
-        maxVal={maxP}
+        minVal={precomputed.pressure.p500Min}
+        maxVal={precomputed.pressure.p500Max}
         unit="kPa"
         scaleLabel="Pressure Scale"
         description="Hourly wind pressure for a 1-in-500-year return period per NBC 2025 climatic data. Used for structural design of cladding and components exposed to wind loads."
-        locationCount={pressureLocations.length}
+        locationCount={precomputed.pressureLocationCount}
       >
         <div className="panel-card formula-card">
           <h3>Return Period</h3>

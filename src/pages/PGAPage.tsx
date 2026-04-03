@@ -1,103 +1,54 @@
-import { useMemo } from 'react';
-import { MapContainer, TileLayer } from 'react-leaflet';
+import BaseMap from '../components/BaseMap';
 import HeatmapLayer from '../components/HeatmapLayer';
 import SidePanel from '../components/SidePanel';
-import { seismicLocations } from '../data/seismicPoints';
+import precomputed from '../data/precomputed.json';
 import type { HeatmapDataPoint } from '../types/heatmap';
-import 'leaflet/dist/leaflet.css';
 
-const CANADA_CENTER: [number, number] = [56.1304, -106.3468];
-
-// Non-linear PGA scale breakpoints (matching NBC standard legend)
-const PGA_BREAKS = [0, 0.01, 0.02, 0.05, 0.1, 0.2, 0.4, 0.6, 0.8, 1.0, 2.0, 4.0];
-
-// Gradient matching the provided image — 12 bands from white to dark maroon
-// Each stop maps to one PGA_BREAKS value, evenly spaced in normalized [0,1]
+// Gradient matching the NBC PGA legend: white→blue→cyan→green→lime→yellow→orange→red→dark
 const GRADIENT: Record<number, string> = {
   [0 / 11]: '#ffffff',   // 0.00 g — white
-  [1 / 11]: '#d0d0ff',   // 0.01 g — pale lavender
-  [2 / 11]: '#9898ff',   // 0.02 g — light blue
-  [3 / 11]: '#4040ff',   // 0.05 g — blue
-  [4 / 11]: '#00c8c8',   // 0.10 g — cyan
-  [5 / 11]: '#00c800',   // 0.20 g — green
-  [6 / 11]: '#ffff00',   // 0.40 g — yellow
-  [7 / 11]: '#ffc800',   // 0.60 g — amber
-  [8 / 11]: '#ff6400',   // 0.80 g — orange
+  [1 / 11]: '#ccccff',   // 0.01 g — pale lavender
+  [2 / 11]: '#9999ff',   // 0.02 g — light blue
+  [3 / 11]: '#4444ff',   // 0.05 g — blue
+  [4 / 11]: '#00cccc',   // 0.10 g — cyan
+  [5 / 11]: '#00cc00',   // 0.20 g — green
+  [6 / 11]: '#99ff00',   // 0.40 g — lime
+  [7 / 11]: '#ffff00',   // 0.60 g — yellow
+  [8 / 11]: '#ff8800',   // 0.80 g — orange
   [9 / 11]: '#ff0000',   // 1.00 g — red
   [10 / 11]: '#880000',  // 2.00 g — dark red
-  [11 / 11]: '#320000',  // 4.00 g — dark maroon
+  [11 / 11]: '#220000',  // 4.00 g — very dark maroon
 };
 
-/** Map a PGA value to 0–1 using the non-linear scale */
-function pgaToNormalized(pga: number): number {
-  if (pga <= 0) return 0;
-  if (pga >= PGA_BREAKS[PGA_BREAKS.length - 1]) return 1;
-
-  for (let i = 0; i < PGA_BREAKS.length - 1; i++) {
-    if (pga <= PGA_BREAKS[i + 1]) {
-      const lo = PGA_BREAKS[i];
-      const hi = PGA_BREAKS[i + 1];
-      const t = (pga - lo) / (hi - lo);
-      return (i + t) / (PGA_BREAKS.length - 1);
-    }
-  }
-  return 1;
-}
-
-function computeData() {
-  const maxPga = Math.max(...seismicLocations.map((l) => l.pga));
-  const minPga = Math.min(...seismicLocations.map((l) => l.pga));
-
-  const points: HeatmapDataPoint[] = seismicLocations.map((loc) => ({
-    lat: loc.lat,
-    long: loc.long,
-    intensity: pgaToNormalized(loc.pga) * 100,
-  }));
-
-  return { points, maxPga, minPga };
-}
-
-// Legend tick labels matching the non-linear scale
+const points = precomputed.pga.points as HeatmapDataPoint[];
 const LEGEND_TICKS = [0, 0.05, 0.1, 0.2, 0.4, 0.8, 2.0, 4.0];
 
 export default function PGAPage() {
-  const { points, maxPga, minPga } = useMemo(computeData, []);
-
   return (
     <div className="page-layout">
       <div className="map-section">
-        <MapContainer
-          center={CANADA_CENTER}
-          zoom={4}
-          minZoom={3}
-          maxZoom={13}
-          style={{ width: '100%', height: '100%' }}
-          scrollWheelZoom
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+        <BaseMap>
           <HeatmapLayer
             points={points}
             gradient={GRADIENT}
             opacity={0.7}
             power={2.5}
-            resolution={4}
+            resolution={3}
+            stepped
           />
-        </MapContainer>
+        </BaseMap>
       </div>
       <SidePanel
         badge="NBC 2025"
         title="Peak Ground Acceleration"
         subtitle="PGA for Site Class XD"
         gradient={GRADIENT}
-        minVal={minPga}
-        maxVal={maxPga}
+        minVal={precomputed.pga.pgaMin}
+        maxVal={precomputed.pga.pgaMax}
         unit="g"
         scaleLabel="PGA Scale (non-linear)"
         description="Peak Ground Acceleration (PGA) represents the maximum horizontal acceleration at a site during an earthquake. Values shown are for Site Class XD per NBC 2025 seismic hazard data."
-        locationCount={seismicLocations.length}
+        locationCount={precomputed.locationCount}
       >
         <div className="panel-card formula-card">
           <h3>What is PGA?</h3>
