@@ -4,20 +4,20 @@ import SidePanel from '../components/SidePanel';
 import precomputed from '../data/precomputed.json';
 import type { HeatmapDataPoint } from '../types/heatmap';
 
-// Gradient matching the provided NBC PGA legend image
+// Gradient matching the NBC PGA legend: white→blue→cyan→green→lime→yellow→orange→red→dark
 const GRADIENT: Record<number, string> = {
-  [0 / 11]: '#ffffff',
-  [1 / 11]: '#d0d0ff',
-  [2 / 11]: '#9898ff',
-  [3 / 11]: '#4040ff',
-  [4 / 11]: '#00c8c8',
-  [5 / 11]: '#00c800',
-  [6 / 11]: '#ffff00',
-  [7 / 11]: '#ffc800',
-  [8 / 11]: '#ff6400',
-  [9 / 11]: '#ff0000',
-  [10 / 11]: '#880000',
-  [11 / 11]: '#320000',
+  [0 / 11]: '#ffffff',   // 0.00 g — white
+  [1 / 11]: '#ccccff',   // 0.01 g — pale lavender
+  [2 / 11]: '#9999ff',   // 0.02 g — light blue
+  [3 / 11]: '#4444ff',   // 0.05 g — blue
+  [4 / 11]: '#00cccc',   // 0.10 g — cyan
+  [5 / 11]: '#00cc00',   // 0.20 g — green
+  [6 / 11]: '#99ff00',   // 0.40 g — lime
+  [7 / 11]: '#ffff00',   // 0.60 g — yellow
+  [8 / 11]: '#ff8800',   // 0.80 g — orange
+  [9 / 11]: '#ff0000',   // 1.00 g — red
+  [10 / 11]: '#880000',  // 2.00 g — dark red
+  [11 / 11]: '#220000',  // 4.00 g — very dark maroon
 };
 
 const points = precomputed.pga.points as HeatmapDataPoint[];
