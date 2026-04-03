@@ -1,9 +1,7 @@
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import { CircleMarker, Popup } from 'react-leaflet';
+import BaseMap from '../components/BaseMap';
 import SidePanel from '../components/SidePanel';
 import { seismicLocations } from '../data/seismicPoints';
-import 'leaflet/dist/leaflet.css';
-
-const CANADA_CENTER: [number, number] = [56.1304, -106.3468];
 
 const DUMMY_GRADIENT: Record<number, string> = {
   0.0: '#ccc',
@@ -14,18 +12,7 @@ export default function MarkersPage() {
   return (
     <div className="page-layout">
       <div className="map-section">
-        <MapContainer
-          center={CANADA_CENTER}
-          zoom={4}
-          minZoom={3}
-          maxZoom={13}
-          style={{ width: '100%', height: '100%' }}
-          scrollWheelZoom
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+        <BaseMap>
           {seismicLocations.map((loc) => (
             <CircleMarker
               key={`${loc.lat}-${loc.long}`}
@@ -48,7 +35,7 @@ export default function MarkersPage() {
               </Popup>
             </CircleMarker>
           ))}
-        </MapContainer>
+        </BaseMap>
       </div>
       <SidePanel
         badge="NBC 2025"

@@ -1,12 +1,10 @@
 import { useMemo } from 'react';
-import { MapContainer, TileLayer } from 'react-leaflet';
+import BaseMap from '../components/BaseMap';
 import HeatmapLayer from '../components/HeatmapLayer';
 import SidePanel from '../components/SidePanel';
 import { pressureLocations } from '../data/pressurePoints';
 import type { HeatmapDataPoint } from '../types/heatmap';
-import 'leaflet/dist/leaflet.css';
 
-const CANADA_CENTER: [number, number] = [56.1304, -106.3468];
 const GRADIENT: Record<number, string> = {
   0.0: '#feebe2',
   0.2: '#fcc5c0',
@@ -33,18 +31,7 @@ export default function PressurePage() {
   return (
     <div className="page-layout">
       <div className="map-section">
-        <MapContainer
-          center={CANADA_CENTER}
-          zoom={4}
-          minZoom={3}
-          maxZoom={13}
-          style={{ width: '100%', height: '100%' }}
-          scrollWheelZoom
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+        <BaseMap>
           <HeatmapLayer
             points={points}
             gradient={GRADIENT}
@@ -52,7 +39,7 @@ export default function PressurePage() {
             power={2.5}
             resolution={4}
           />
-        </MapContainer>
+        </BaseMap>
       </div>
       <SidePanel
         badge="NBC 2025"
