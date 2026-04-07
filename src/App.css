@@ -291,4 +291,5 @@
 /* Leaflet overrides */
 .leaflet-container {
   font-family: var(--font-body);
+  background: #ffffff;
 }
