@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import type { LatLngBoundsExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-const CANADA_CENTER: [number, number] = [56.1304, -106.3468];
+const CANADA_CENTER: [number, number] = [62, -96];
 const CANADA_BOUNDS: LatLngBoundsExpression = [
   [38, -145],
   [86, -48],
@@ -18,7 +18,7 @@ export default function BaseMap({ children }: BaseMapProps) {
   return (
     <MapContainer
       center={CANADA_CENTER}
-      zoom={4}
+      zoom={3}
       minZoom={3}
       maxZoom={10}
       maxBounds={CANADA_BOUNDS}
