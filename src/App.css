@@ -293,3 +293,9 @@
   font-family: var(--font-body);
   background: #ffffff;
 }
+
+/* Fix white seam lines between heatmap tiles */
+.leaflet-tile-pane canvas {
+  width: 257px !important;
+  height: 257px !important;
+}
