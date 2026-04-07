@@ -70,30 +70,35 @@ function colorFromValue(
   ];
 }
 
-/** For each pixel, take the maximum point intensity attenuated by distance.
- *  Nearby points contribute their full value; far points decay toward 0.
- *  The highest contribution wins (conservative / envelope approach). */
+/** Nearest-neighbor interpolation.
+ *  Find the closest data point and use its value.
+ *  If multiple points are equidistant, take the minimum. */
 function idw(
   lat: number,
   lng: number,
   points: HeatmapDataPoint[],
-  power: number,
+  _power: number,
 ): number {
-  let maxVal = 0;
+  let bestDist = Infinity;
+  let bestVal = 0;
 
   for (let i = 0; i < points.length; i++) {
     const dLat = lat - points[i].lat;
     const dLng = lng - points[i].long;
     const distSq = dLat * dLat + dLng * dLng;
+    const val = points[i].intensity / 100;
 
-    if (distSq < 0.0001) return points[i].intensity / 100;
-
-    const w = Math.min(1, 1 / Math.pow(distSq, power / 2));
-    const val = (points[i].intensity / 100) * w;
-    if (val > maxVal) maxVal = val;
+    if (distSq < bestDist - 1e-8) {
+      // Strictly closer — new winner
+      bestDist = distSq;
+      bestVal = val;
+    } else if (distSq < bestDist + 1e-8) {
+      // Tied — take the minimum value
+      bestVal = Math.min(bestVal, val);
+    }
   }
 
-  return maxVal;
+  return bestVal;
 }
 
 export default function HeatmapLayer({

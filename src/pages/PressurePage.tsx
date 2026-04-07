@@ -8,12 +8,12 @@ import 'leaflet/dist/leaflet.css';
 
 const CANADA_CENTER: [number, number] = [56.1304, -106.3468];
 const GRADIENT: Record<number, string> = {
-  0.0: '#feebe2',
-  0.2: '#fcc5c0',
-  0.4: '#fa9fb5',
-  0.6: '#f768a1',
-  0.8: '#c51b8a',
-  1.0: '#7a0177',
+  0.0: '#eff3ff',
+  0.2: '#6baed6',
+  0.4: '#fed976',
+  0.6: '#fd8d3c',
+  0.8: '#e31a1c',
+  1.0: '#800026',
 };
 
 function computeData() {
