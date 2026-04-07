@@ -72,7 +72,7 @@ function colorFromValue(
 
 /** Nearest-neighbor interpolation.
  *  Find the closest data point and use its value.
- *  If multiple points are equidistant, take the minimum. */
+ *  If multiple points are equidistant, take the maximum. */
 function idw(
   lat: number,
   lng: number,
@@ -93,8 +93,8 @@ function idw(
       bestDist = distSq;
       bestVal = val;
     } else if (distSq < bestDist + 1e-8) {
-      // Tied — take the minimum value
-      bestVal = Math.min(bestVal, val);
+      // Tied — take the maximum value
+      bestVal = Math.max(bestVal, val);
     }
   }
 
