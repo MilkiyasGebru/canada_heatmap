@@ -70,14 +70,16 @@ function colorFromValue(
   ];
 }
 
+/** For each pixel, take the maximum point intensity attenuated by distance.
+ *  Nearby points contribute their full value; far points decay toward 0.
+ *  The highest contribution wins (conservative / envelope approach). */
 function idw(
   lat: number,
   lng: number,
   points: HeatmapDataPoint[],
   power: number,
 ): number {
-  let num = 0;
-  let den = 0;
+  let maxVal = 0;
 
   for (let i = 0; i < points.length; i++) {
     const dLat = lat - points[i].lat;
@@ -86,12 +88,12 @@ function idw(
 
     if (distSq < 0.0001) return points[i].intensity / 100;
 
-    const w = 1 / Math.pow(distSq, power / 2);
-    num += w * (points[i].intensity / 100);
-    den += w;
+    const w = Math.min(1, 1 / Math.pow(distSq, power / 2));
+    const val = (points[i].intensity / 100) * w;
+    if (val > maxVal) maxVal = val;
   }
 
-  return den === 0 ? 0 : num / den;
+  return maxVal;
 }
 
 export default function HeatmapLayer({
