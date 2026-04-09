@@ -294,6 +294,23 @@
   background: #ffffff;
 }
 
+/* City name labels */
+.city-label {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-shadow: 1px 1px 2px #fff, -1px -1px 2px #fff, 1px -1px 2px #fff, -1px 1px 2px #fff;
+  padding: 0 !important;
+}
+
+.city-label::before {
+  display: none !important;
+}
+
 /* Fix white seam lines between heatmap tiles */
 .leaflet-tile-pane canvas {
   width: 257px !important;

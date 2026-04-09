@@ -12,7 +12,7 @@ export default function MarkersPage() {
   return (
     <div className="page-layout">
       <div className="map-section">
-        <BaseMap>
+        <BaseMap showCapitals={false}>
           {seismicLocations.map((loc) => (
             <CircleMarker
               key={`${loc.lat}-${loc.long}`}

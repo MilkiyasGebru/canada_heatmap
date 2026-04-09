@@ -1,5 +1,6 @@
 import { MapContainer, TileLayer } from 'react-leaflet';
 import CanadaMask from './CanadaMask';
+import CapitalCities from './CapitalCities';
 import type { ReactNode } from 'react';
 import type { LatLngBoundsExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -12,9 +13,10 @@ const CANADA_BOUNDS: LatLngBoundsExpression = [
 
 interface BaseMapProps {
   children?: ReactNode;
+  showCapitals?: boolean;
 }
 
-export default function BaseMap({ children }: BaseMapProps) {
+export default function BaseMap({ children, showCapitals = true }: BaseMapProps) {
   return (
     <MapContainer
       center={CANADA_CENTER}
@@ -33,6 +35,7 @@ export default function BaseMap({ children }: BaseMapProps) {
       />
       {children}
       <CanadaMask />
+      {showCapitals && <CapitalCities />}
     </MapContainer>
   );
 }
