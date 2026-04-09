@@ -17,6 +17,7 @@ const CAPITALS = [
   { name: 'Fredericton', lat: 45.9488, long: -66.6292 },
   { name: 'Halifax', lat: 44.6486, long: -63.5859 },
   { name: "St. John's", lat: 47.5615, long: -52.7126 },
+  { name: 'Iqaluit', lat: 63.7467, long: -68.5170 },
 ];
 
 const DOT_SIZE = 0.35; // degrees — visible at zoom 3
