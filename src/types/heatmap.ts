@@ -19,3 +19,17 @@ export interface PressureLocation {
   long: number;
   p500: number; // 1/500 value
 }
+
+export interface CustomLocation {
+  location: string;
+  lat: number;
+  long: number;
+  value: number;
+}
+
+export interface AviationLocation {
+  location: string;
+  province: string;
+  lat: number;
+  long: number;
+}

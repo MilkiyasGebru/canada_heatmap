@@ -5,6 +5,8 @@ const links = [
   { to: '/pga', label: 'PGA' },
   { to: '/pressure', label: 'Wind Pressure' },
   { to: '/markers', label: 'City Locations' },
+    {to: '/custom', label: 'Custom Values' },
+    { to: '/aviation', label: 'Aviation' },
 ];
 
 export default function Navigation() {

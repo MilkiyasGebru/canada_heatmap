@@ -5,6 +5,8 @@ import PGAPage from './pages/PGAPage';
 import PressurePage from './pages/PressurePage';
 import MarkersPage from './pages/MarkersPage';
 import './App.css';
+import CustomPage from "./pages/CustomPage.tsx";
+import AviationPage from "./pages/AviationPage.tsx";
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
           <Route path="/pga" element={<PGAPage />} />
           <Route path="/pressure" element={<PressurePage />} />
           <Route path="/markers" element={<MarkersPage />} />
+          <Route path="/custom" element={<CustomPage />} />
+          <Route path="/aviation" element={<AviationPage />} />
         </Routes>
       </div>
     </BrowserRouter>
